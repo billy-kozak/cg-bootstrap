@@ -22,6 +22,9 @@
 #include "arg-parse.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
 /******************************************************************************
 *                                   DEFINES                                   *
 ******************************************************************************/
@@ -38,8 +41,14 @@ int main (int argc, char **argv)
 {
 	struct prog_args args = parse_args(argc, argv);
 
-	print_prog_args(stderr, &args);
-	destroy_prog_args(&args);
+	if(args.prog_path == NULL) {
+		destroy_prog_args(&args);
+		return 0;
+	} else if(execvp(args.prog_path, args.additional_args)) {
+		perror("Error: unable to execute");
+		destroy_prog_args(&args);
+		return 1;
+	}
 
 	return 0;
 }
