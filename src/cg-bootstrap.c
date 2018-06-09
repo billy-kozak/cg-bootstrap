@@ -20,6 +20,7 @@
 *                                  INCLUDES                                   *
 ******************************************************************************/
 #include "arg-parse.h"
+#include "conf-parse.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +41,11 @@
 int main (int argc, char **argv)
 {
 	struct prog_args args = parse_args(argc, argv);
+
+	if(args.conf_path != NULL) {
+		struct prog_conf *conf = parse_conf(args.conf_path);
+		destroy_conf(conf);
+	}
 
 	if(args.prog_path == NULL) {
 		destroy_prog_args(&args);
