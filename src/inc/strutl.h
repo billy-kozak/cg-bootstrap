@@ -16,49 +16,29 @@
 * You should have received a copy of the GNU Lesser General Public License    *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
+#ifndef STRUTL_H_
+#define STRUTL_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "arg-parse.h"
-#include "conf-parse.h"
-
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-/******************************************************************************
-*                                   DEFINES                                   *
-******************************************************************************/
-/******************************************************************************
-*                                    DATA                                     *
-******************************************************************************/
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
+struct lstr {
+	size_t len;
+	const char *str;
+};
 /******************************************************************************
-*                              PUBLIC FUNCTIONS                               *
+*                            FUNCTION DECLARATIONS                            *
 ******************************************************************************/
-int main (int argc, char **argv)
-{
-	struct prog_args args = parse_args(argc, argv);
-
-	if(args.conf_path != NULL) {
-		struct prog_conf *conf = parse_conf(args.conf_path);
-		if(conf == NULL) {
-			return 1;
-		}
-		destroy_conf(conf);
-	}
-
-	if(args.prog_path == NULL) {
-		destroy_prog_args(&args);
-		return 0;
-	} else if(execvp(args.prog_path, args.additional_args)) {
-		perror("Error: unable to execute");
-		destroy_prog_args(&args);
-		return 1;
-	}
-
-	return 0;
-}
+struct lstr strip(const char *str, size_t len);
+struct lstr chop(const char *str, size_t len, char delim);
+struct lstr stripl(struct lstr s);
+struct lstr chopl(struct lstr s, char delim);
+int lstrcmp(struct lstr s1, struct lstr s2);
+int lstrcmp2(struct lstr s1, const char *s2);
+void lstrcpy(char *dest, struct lstr src);
+char *lstrcpy2(struct lstr src);
 /*****************************************************************************/
+#endif /* STRUTL_H_ */

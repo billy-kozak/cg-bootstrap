@@ -19,46 +19,30 @@
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "arg-parse.h"
-#include "conf-parse.h"
+#include "memutl.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
+#include <string.h>
+#include<stdarg.h>
 /******************************************************************************
-*                                   DEFINES                                   *
+*                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
-/******************************************************************************
-*                                    DATA                                     *
-******************************************************************************/
-/******************************************************************************
-*                                    TYPES                                    *
-******************************************************************************/
-/******************************************************************************
-*                              PUBLIC FUNCTIONS                               *
-******************************************************************************/
-int main (int argc, char **argv)
+int anynull_f(size_t count, ...)
 {
-	struct prog_args args = parse_args(argc, argv);
+	int ret = 0;
+	va_list ap;
 
-	if(args.conf_path != NULL) {
-		struct prog_conf *conf = parse_conf(args.conf_path);
-		if(conf == NULL) {
-			return 1;
+	va_start(ap, count);
+	for(size_t i = 0; i < count; i++) {
+		void *arg = va_arg(ap, void*);
+
+		if(arg == NULL) {
+			ret = 1;
+			break;
 		}
-		destroy_conf(conf);
 	}
+	va_end(ap);
 
-	if(args.prog_path == NULL) {
-		destroy_prog_args(&args);
-		return 0;
-	} else if(execvp(args.prog_path, args.additional_args)) {
-		perror("Error: unable to execute");
-		destroy_prog_args(&args);
-		return 1;
-	}
-
-	return 0;
+	return ret;
 }
 /*****************************************************************************/

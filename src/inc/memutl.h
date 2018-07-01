@@ -16,49 +16,20 @@
 * You should have received a copy of the GNU Lesser General Public License    *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
+#ifndef MEMUTL_H_
+#define MEMUTL_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "arg-parse.h"
-#include "conf-parse.h"
-
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
 /******************************************************************************
-*                                   DEFINES                                   *
+*                                   MACROS                                    *
 ******************************************************************************/
+#define NUMARGS(...) (sizeof((void*[]){__VA_ARGS__}) / sizeof(void*))
+#define anynull(...) (anynull_f(NUMARGS(__VA_ARGS__), __VA_ARGS__))
 /******************************************************************************
-*                                    DATA                                     *
+*                            FUNCTION DECLARATIONS                            *
 ******************************************************************************/
-/******************************************************************************
-*                                    TYPES                                    *
-******************************************************************************/
-/******************************************************************************
-*                              PUBLIC FUNCTIONS                               *
-******************************************************************************/
-int main (int argc, char **argv)
-{
-	struct prog_args args = parse_args(argc, argv);
-
-	if(args.conf_path != NULL) {
-		struct prog_conf *conf = parse_conf(args.conf_path);
-		if(conf == NULL) {
-			return 1;
-		}
-		destroy_conf(conf);
-	}
-
-	if(args.prog_path == NULL) {
-		destroy_prog_args(&args);
-		return 0;
-	} else if(execvp(args.prog_path, args.additional_args)) {
-		perror("Error: unable to execute");
-		destroy_prog_args(&args);
-		return 1;
-	}
-
-	return 0;
-}
+int anynull_f(size_t count, ...);
 /*****************************************************************************/
+#endif /* MEMUTL_H_ */
