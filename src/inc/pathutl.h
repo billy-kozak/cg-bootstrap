@@ -16,57 +16,25 @@
 * You should have received a copy of the GNU Lesser General Public License    *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
+#ifndef PATHUTL_H_
+#define PATHUTL_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "arg-parse.h"
-#include "conf-parse.h"
-#include "cg-setup.h"
+#include "memutl.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
 /******************************************************************************
-*                                   DEFINES                                   *
+*                                   MACROS                                    *
 ******************************************************************************/
+#define PATH_JOIN_NUMARGS(...) (sizeof((char*[]){__VA_ARGS__}) / sizeof(char*))
+#define path_join(mem, ...) \
+	path_join_f(mem, PATH_JOIN_NUMARGS(__VA_ARGS__), __VA_ARGS__)
 /******************************************************************************
-*                                    DATA                                     *
+*                            FUNCTION DECLARATIONS                            *
 ******************************************************************************/
-/******************************************************************************
-*                                    TYPES                                    *
-******************************************************************************/
-/******************************************************************************
-*                              PUBLIC FUNCTIONS                               *
-******************************************************************************/
-int main (int argc, char **argv)
-{
-	struct prog_args args = parse_args(argc, argv);
-	struct prog_conf *conf = NULL;
-
-	if(args.conf_path != NULL) {
-		if((conf = parse_conf(args.conf_path)) == NULL) {
-			goto fail1;
-		}
-		if(setup_cgroups(conf)) {
-			goto fail1;
-		}
-		destroy_conf(conf);
-	}
-
-	if(args.prog_path == NULL) {
-		destroy_prog_args(&args);
-		return 0;
-	} else if(execvp(args.prog_path, args.additional_args)) {
-		perror("Error: unable to execute");
-		goto fail0;
-	}
-
-	return 0;
-fail1:
-	destroy_conf(conf);
-fail0:
-	destroy_prog_args(&args);
-	return 1;
-}
+char *path_join_f(struct mem_chunk *mem, size_t count, ...);
+int mkpath(char *path);
+char *path_elems(char *path, char **saveptr);
 /*****************************************************************************/
+#endif /* PATHUTL_H_ */

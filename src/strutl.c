@@ -21,6 +21,8 @@
 ******************************************************************************/
 #include "strutl.h"
 
+#include "memutl.h"
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -111,5 +113,28 @@ char *lstrcpy2(struct lstr src)
 
 	memcpy(ret, src.str, src.len);
 	return ret;
+}
+/*****************************************************************************/
+char *concat_to(const char *s1, const char *s2, struct mem_chunk *chunk)
+{
+	char *dst;
+	size_t len_1 = strlen(s1);
+	size_t len_2 = strlen(s2);
+
+	size_t len_total = len_1 + len_2 + 1;
+
+	if(len_total < chunk->size) {
+		if(realloc_chunk(chunk, len_total)) {
+			return NULL;
+		}
+	}
+
+	dst = chunk->mem;
+
+	memcpy(dst, s1, len_1);
+	memcpy(dst + len_1, s2, len_2);
+	dst[len_total -1] = '\0';
+
+	return dst;
 }
 /*****************************************************************************/

@@ -19,54 +19,124 @@
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "arg-parse.h"
-#include "conf-parse.h"
-#include "cg-setup.h"
+#include "pathutl.h"
 
+#include "memutl.h"
+
+#include <stdarg.h>
+#include <string.h>
+#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
+#include <sys/stat.h>
 /******************************************************************************
-*                                   DEFINES                                   *
+*                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
-/******************************************************************************
-*                                    DATA                                     *
-******************************************************************************/
-/******************************************************************************
-*                                    TYPES                                    *
-******************************************************************************/
-/******************************************************************************
-*                              PUBLIC FUNCTIONS                               *
-******************************************************************************/
-int main (int argc, char **argv)
+int mkpath(char *path)
 {
-	struct prog_args args = parse_args(argc, argv);
-	struct prog_conf *conf = NULL;
+	char *saveptr = NULL;
+	char *elem;
+	struct stat sb;
 
-	if(args.conf_path != NULL) {
-		if((conf = parse_conf(args.conf_path)) == NULL) {
-			goto fail1;
+	while((elem = path_elems(path, &saveptr)) != NULL) {
+		if(stat(elem, &sb) != 0) {
+			if(mkdir(elem, 0644)) {
+				return 1;
+			}
 		}
-		if(setup_cgroups(conf)) {
-			goto fail1;
-		}
-		destroy_conf(conf);
-	}
-
-	if(args.prog_path == NULL) {
-		destroy_prog_args(&args);
-		return 0;
-	} else if(execvp(args.prog_path, args.additional_args)) {
-		perror("Error: unable to execute");
-		goto fail0;
 	}
 
 	return 0;
-fail1:
-	destroy_conf(conf);
-fail0:
-	destroy_prog_args(&args);
-	return 1;
+}
+/*****************************************************************************/
+char *path_elems(char *path, char **saveptr)
+{
+	char *ptr = *saveptr;
+	if(ptr == NULL) {
+		if(path[0] == '/') {
+			*saveptr = &path[1];
+			return "/";
+		} else {
+			*saveptr = &path[0];
+			return "./";
+		}
+	}
+
+	if(ptr != path && ptr[-1] == '\0') {
+		ptr[-1] = '/';
+	}
+
+	if(ptr[0] == '\0') {
+		return NULL;
+	}
+
+	while(*ptr == '/') {
+		ptr += 1;
+	}
+
+	if(*ptr == '\0') {
+		*saveptr = ptr;
+		return NULL;
+	}
+
+	while(*ptr != '/' && *ptr != '\0') {
+		ptr += 1;
+	}
+
+	if(*ptr == '/') {
+		*ptr = '\0';
+		ptr += 1;
+	}
+
+	*saveptr = ptr;
+	return path;
+}
+/*****************************************************************************/
+char *path_join_f(struct mem_chunk *chunk, size_t count, ...)
+{
+	char *path = NULL;
+	size_t path_len = 0;
+	va_list ap;
+
+	va_start(ap, count);
+	for(size_t i = 0; i < count; i++) {
+		char *str = va_arg(ap, char*);
+
+		size_t len = strlen(str);
+
+		if(i != (count - 1) && str[len - 1] != '/') {
+			path_len += len + 1;
+		} else {
+			path_len += len;
+		}
+	}
+	va_end(ap);
+
+	if(chunk->size < (path_len + 1)) {
+		if(realloc_chunk(chunk, path_len + 1)) {
+			return NULL;
+		}
+	}
+	path = chunk->mem;
+
+	va_start(ap, count);
+	for(size_t k = 0, i = 0; i < count; i++) {
+		char *str = va_arg(ap, char*);
+
+		for(size_t j = 0; str[j] != '\0'; j++) {
+			path[k] = str[j];
+			k += 1;
+		}
+
+		if(i != (count - 1) && path[k - 1] != '/') {
+			path[k] = '/';
+			k += 1;
+		}
+	}
+	va_end(ap);
+
+	path[path_len] = '\0';
+
+
+	return path;
 }
 /*****************************************************************************/

@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include<stdarg.h>
+#include <stdarg.h>
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
@@ -44,5 +44,17 @@ int anynull_f(size_t count, ...)
 	va_end(ap);
 
 	return ret;
+}
+/*****************************************************************************/
+int realloc_chunk(struct mem_chunk *chunk, size_t new_size)
+{
+	void *mem = realloc(chunk->mem, new_size);
+	if(mem == NULL) {
+		return 1;
+	}
+	chunk->size = new_size;
+	chunk->mem = mem;
+
+	return 0;
 }
 /*****************************************************************************/

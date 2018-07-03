@@ -21,6 +21,8 @@
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
+#include "memutl.h"
+
 #include <stdlib.h>
 /******************************************************************************
 *                                    TYPES                                    *
@@ -40,5 +42,6 @@ int lstrcmp(struct lstr s1, struct lstr s2);
 int lstrcmp2(struct lstr s1, const char *s2);
 void lstrcpy(char *dest, struct lstr src);
 char *lstrcpy2(struct lstr src);
+char *concat_to(const char *s1, const char *s2, struct mem_chunk *chunk);
 /*****************************************************************************/
 #endif /* STRUTL_H_ */
