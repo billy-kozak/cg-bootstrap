@@ -1,0 +1,11 @@
+# Example Configuration File for cg-bootstrap
+
+[ general ]
+	prefix = /sys/fs/cgroup
+
+[ groups ]
+	memory = user.slice/example.cgroup
+
+[ params ]
+	memory.limit_in_bytes = -1
+
