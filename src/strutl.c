@@ -42,7 +42,11 @@ struct lstr strip(const char *str, size_t len)
 		end -= 1;
 	}
 
-	ret.len = end - start + 1;
+	if(isspace(*start)) {
+		ret.len = 0;
+	} else {
+		ret.len = end - start + 1;
+	}
 	ret.str = start;
 
 	return ret;
